@@ -3,6 +3,11 @@ import json
 
 
 # Create your tests here.
+
+class ExampleTest(TestCase):
+    def test(self):
+        self.assertEqual(1, 1)
+
 class RegisterTest(TestCase):
     def test_register(self):
         user = {
