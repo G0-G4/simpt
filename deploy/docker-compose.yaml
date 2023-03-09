@@ -1,9 +1,19 @@
 version: '3.4'
 services:
+  nginx:
+    build: ./nginx
+    volumes:
+      - ./nginx:/etc/nginx/conf.d:ro
+      - ../frontend/static:/data/static:ro
+      - ./log:/var/log/nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
   backend:
     build: ../backend
-    ports:
-      - "8000:8000"
+    expose:
+      - 8000
     env_file:
       ../.env
     depends_on:
@@ -11,7 +21,8 @@ services:
     command: >
       sh -c "python manage.py makemigrations
       && python manage.py migrate
-      && python manage.py runserver 0.0.0.0:8000"
+      && gunicorn simpt.wsgi -b 0.0.0.0:8000"
+    restart: unless-stopped
   postgres:
       image: postgres:11.5-alpine
       container_name: postgres
@@ -20,7 +31,8 @@ services:
         - POSTGRES_PASSWORD=hello_django
         - POSTGRES_DB=hello_django_dev
         - PGDATA=/var/lib/postgresql/data/
-      ports:
-        - "5432:5432"
+      expose:
+        - 5432
       volumes:
         - .docker-volumes/postgres/data:/var/lib/postgresql/data/"
+      restart: unless-stopped
